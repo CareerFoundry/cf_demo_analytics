@@ -14,7 +14,7 @@ class LinksViewController: UITableViewController, SFSafariViewControllerDelegate
     
     var links: Array<String> {
         get {
-            let links = NSUserDefaults.standardUserDefaults().objectForKey(userDefaultsKey) as? Array<String>
+            let links = UserDefaults.standard.object(forKey: userDefaultsKey) as? Array<String>
             
             if let links = links {
                 return links
@@ -23,15 +23,15 @@ class LinksViewController: UITableViewController, SFSafariViewControllerDelegate
             return []
         }
         set {
-            NSUserDefaults.standardUserDefaults().setObject(newValue, forKey: userDefaultsKey)
+            UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
         }
     }
     
-    @IBAction func tappedAddButton(sender: AnyObject) {
-        let alertController = UIAlertController(title: "New Link", message: "Add link to save for later.", preferredStyle: .Alert)
+    @IBAction func tappedAddButton(_ sender: AnyObject) {
+        let alertController = UIAlertController(title: "New Link", message: "Add link to save for later.", preferredStyle: .alert)
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
-        let addAction = UIAlertAction(title: "Add", style: .Default) { (action) in
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let addAction = UIAlertAction(title: "Add", style: .default) { (action) in
             if let link = alertController.textFields?.first?.text {
                 self.links.append(link)
                 self.tableView.reloadData()
@@ -41,66 +41,66 @@ class LinksViewController: UITableViewController, SFSafariViewControllerDelegate
         alertController.addAction(cancelAction)
         alertController.addAction(addAction)
         
-        alertController.addTextFieldWithConfigurationHandler { (textField) in
+        alertController.addTextField { (textField) in
             textField.placeholder = "Link"
             textField.keyboardType = .URL
         }
         
-        presentViewController(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
         
     }
     
-    @IBAction func tappedDeleteButton(sender: AnyObject) {
+    @IBAction func tappedDeleteButton(_ sender: AnyObject) {
         links.removeAll()
         tableView.reloadData()
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return links.count
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("LinkCell", forIndexPath: indexPath)
-        cell.textLabel?.text = links[indexPath.row]
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "LinkCell", for: indexPath)
+        cell.textLabel?.text = links[(indexPath as NSIndexPath).row]
         
         return cell
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        openURL(links[indexPath.row])
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        openURL(links[(indexPath as NSIndexPath).row])
     }
     
-    func safariViewControllerDidFinish(controller: SFSafariViewController) {
-        controller.dismissViewControllerAnimated(true, completion: nil)
+    func safariViewControllerDidFinish(_ controller: SFSafariViewController) {
+        controller.dismiss(animated: true, completion: nil)
     }
     
-    func hasValidURLPrefix(urlString: String) -> Bool {
-        if urlString.lowercaseString.hasPrefix("http://") || urlString.lowercaseString.hasPrefix("https://") {
+    func hasValidURLPrefix(_ urlString: String) -> Bool {
+        if urlString.lowercased().hasPrefix("http://") || urlString.lowercased().hasPrefix("https://") {
             return true
         }
         
         return false
     }
     
-    func prepareURL(urlString: String) -> NSURL? {
+    func prepareURL(_ urlString: String) -> URL? {
         if hasValidURLPrefix(urlString) {
-            return NSURL(string: urlString)
+            return URL(string: urlString)
         } else {
             let urlStringWithPrefix = addURLPrefix(urlString)
-            return NSURL(string: urlStringWithPrefix)
+            return URL(string: urlStringWithPrefix)
         }
     }
     
-    func addURLPrefix(urlString: String) -> String {
+    func addURLPrefix(_ urlString: String) -> String {
         return "http://\(urlString)"
     }
     
-    func openURL(urlString: String) {
+    func openURL(_ urlString: String) {
         if let url = prepareURL(urlString) {
             
-            let safariViewController = SFSafariViewController(URL: url)
+            let safariViewController = SFSafariViewController(url: url)
             safariViewController.delegate = self
-            self.presentViewController(safariViewController, animated: true, completion: nil)
+            self.present(safariViewController, animated: true, completion: nil)
         }
     }
     
